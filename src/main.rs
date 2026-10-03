@@ -1,10 +1,10 @@
-use std::{io, thread, time::Duration};
+use std::{io, time::Duration};
 
 use crossterm::{cursor, event, execute, terminal};
 
 use rustyquarium::{
     self,
-    fish::{self, Fish, Fishes},
+    fish::{Fish, Fishes},
     fish_handler,
 };
 
@@ -34,8 +34,8 @@ fn run() -> io::Result<()> {
     let mut fishes: Vec<Box<dyn Fish>> = Vec::new();
 
     loop {
-        if fishes.len() < 10 {
-            fish_handler::new_fish(Fishes::FihFish, &mut fishes);
+        if fishes.len() < 20 {
+            fish_handler::new_random_fish(&mut fishes);
         }
 
         execute!(io::stdout(), terminal::Clear(terminal::ClearType::All))?;

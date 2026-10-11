@@ -1,6 +1,6 @@
 use std::{io, time::Duration};
 
-use crossterm::{cursor, event, execute, terminal};
+use crossterm::{cursor, event, execute, style::Print, terminal};
 
 use rustyquarium::{
     self,
@@ -31,7 +31,7 @@ fn main() -> io::Result<()> {
 }
 
 fn run() -> io::Result<()> {
-    let mut fishes: Vec<Box<dyn Fish>> = Vec::new();
+    let mut fishes: Vec<Fishes> = Vec::new();
 
     loop {
         if fishes.len() < 20 {

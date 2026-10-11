@@ -1,57 +1,114 @@
-use crossterm::style::{Attribute, Color, Stylize, style};
-use std::fmt;
-use std::{error::Error, io};
+use crossterm::style::Color;
 
-use crossterm::{cursor, execute, style, terminal};
+use crate::{FishOutOfBounds, Point, Sprite};
 
-pub trait Fish {
-    fn update(&mut self) -> Result<(), FishOutOfBounds>;
-    fn pos(&self) -> &Point<u16>;
-    fn render(&self) -> io::Result<()>;
+pub const FIHFISH_SPRITE: Sprite = Sprite {
+    characters: "fih",
+    color: Color::Grey,
+};
+
+pub const BASICFISH_SPRITE: Sprite = Sprite {
+    characters: "><>",
+    color: Color::Blue,
+};
+
+pub const BIGFISH_SPRITE: Sprite = Sprite {
+    characters: "
+         \\,,
+        ,\\\\\\\\,,, 
+    \\\\;;:::::::::o
+    //;:::::::::::>
+       ````//````
+        ",
+
+    color: Color::Green,
+};
+
+pub struct Fish {
+    pub pos: Point<i8>,
+    pub sprite: Sprite,
+    pub update_func: fn(&Self) -> Result<(), FishOutOfBounds>,
+    speed: i8,
 }
 
+/*
 pub enum Fishes {
-    FihFish,
-    BasicFish,
-    BigFish,
+    FihFish { data: FishData },
+    BasicFish { data: FishData },
+    BigFish { data: FishData },
 }
 
-pub enum Direction {
-    Left,
-    Right,
-}
+impl Fishes {
+    pub fn fihfish(pos: Point<i8>, speed: i8) -> Self {
+        Fishes::FihFish {
+            data: FishData {
+                pos,
+                speed,
+                sprite: FIHFISH_SPRITE,
+                move_frames: 0,
+            },
+        }
+    }
 
-#[derive(Debug)]
-pub struct FishOutOfBounds;
+    pub fn basicfish(pos: Point<i8>, speed: i8) -> Self {
+        Fishes::BasicFish {
+            data: FishData {
+                pos,
+                speed,
+                sprite: FIHFISH_SPRITE,
+                move_frames: 0,
+            },
+        }
+    }
 
-impl fmt::Display for FishOutOfBounds {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Fish moved out of bounds")
+    pub fn bigfish(pos: Point<i8>, speed: i8) -> Self {
+        Fishes::BasicFish {
+            data: FishData {
+                pos,
+                speed,
+                sprite: FIHFISH_SPRITE,
+                move_frames: 0,
+            },
+        }
+    }
+
+    fn sprite(&self) -> &Sprite {
+        match self {
+            Fishes::FihFish { data } => &data.sprite,
+            Fishes::BigFish { data } => &data.sprite,
+            Fishes::BasicFish { data } => &data.sprite,
+        }
     }
 }
 
-impl Error for FishOutOfBounds {}
-
-pub struct Point<T> {
-    pub x: T,
-    pub y: T,
-}
-
-impl<T> Point<T> {
-    pub fn new(x: T, y: T) -> Self {
-        Point { x, y }
+impl Fish for Fishes {
+    fn update(&mut self) -> Result<(), FishOutOfBounds> {
+        Ok(())
     }
-}
 
+    fn pos(&self) -> &Point<i8> {}
+
+    fn render(&self) -> io::Result<()> {
+        execute!(
+            io::stdout(),
+            cursor::MoveTo(self.pos().x as u16, self.pos().y as u16),
+            style::PrintStyledContent(self.sprite().characters.with(self.sprite().color))
+        )?;
+
+        Ok(())
+    }
+} */
+
+/*
 pub struct FihFish {
-    pub pos: Point<u16>,
+    pub pos: Point<i8>,
     pub speed: u16,
     pub direction: Direction,
     move_frames: u16,
 }
 
 impl FihFish {
-    pub fn new(pos: Point<u16>, speed: u16, direction: Direction) -> Self {
+    pub fn new(pos: Point<i8>, speed: u16, direction: Direction) -> Self {
         FihFish {
             pos,
             speed,
@@ -78,7 +135,7 @@ impl Fish for FihFish {
                     if self.pos.x
                         >= terminal::size()
                             .expect("Should have been able to read terminal size")
-                            .0
+                            .0 as i8
                     {
                         return Err(FishOutOfBounds);
                     }
@@ -91,7 +148,7 @@ impl Fish for FihFish {
         Ok(())
     }
 
-    fn pos(&self) -> &Point<u16> {
+    fn pos(&self) -> &Point<i8> {
         &self.pos
     }
 
@@ -103,7 +160,7 @@ impl Fish for FihFish {
 
         execute!(
             io::stdout(),
-            cursor::MoveTo(self.pos.x, self.pos.y),
+            cursor::MoveTo(self.pos.x as u16, self.pos.y as u16),
             style::Print(sprite)
         )?;
 
@@ -112,7 +169,7 @@ impl Fish for FihFish {
 }
 
 pub struct BasicFish {
-    pub pos: Point<u16>,
+    pub pos: Point<i8>,
     pub sprite: String,
     pub speed: u16,
     pub direction: Direction,
@@ -120,7 +177,7 @@ pub struct BasicFish {
 }
 
 impl BasicFish {
-    pub fn new(pos: Point<u16>, speed: u16, direction: Direction) -> Self {
+    pub fn new(pos: Point<i8>, speed: u16, direction: Direction) -> Self {
         let sprite = match direction {
             Direction::Left => String::from("<'><"),
             Direction::Right => String::from("><'>"),
@@ -153,7 +210,7 @@ impl Fish for BasicFish {
                     if self.pos.x
                         >= terminal::size()
                             .expect("Should have been able to read terminal size")
-                            .0
+                            .0 as i8
                     {
                         return Err(FishOutOfBounds);
                     }
@@ -166,25 +223,24 @@ impl Fish for BasicFish {
         Ok(())
     }
 
-    fn pos(&self) -> &Point<u16> {
+    fn pos(&self) -> &Point<i8> {
         &self.pos
     }
 
     fn render(&self) -> io::Result<()> {
-        let sprite = "<><";
         match self.direction {
             Direction::Left => {
                 execute!(
                     io::stdout(),
-                    cursor::MoveTo(self.pos.x, self.pos.y),
-                    style::PrintStyledContent(sprite.with(Color::Blue)),
+                    cursor::MoveTo(self.pos.x as u16, self.pos.y as u16),
+                    style::PrintStyledContent(self.sprite.clone().with(Color::Blue)),
                 )?;
             }
             Direction::Right => {
                 execute!(
                     io::stdout(),
-                    cursor::MoveTo(self.pos.x, self.pos.y),
-                    style::PrintStyledContent(sprite.with(Color::Blue)),
+                    cursor::MoveTo(self.pos.x as u16, self.pos.y as u16),
+                    style::PrintStyledContent(self.sprite.clone().with(Color::Blue)),
                 )?;
             }
         };
@@ -194,14 +250,14 @@ impl Fish for BasicFish {
 }
 
 pub struct BigFish {
-    pub pos: Point<u16>,
+    pub pos: Point<i8>,
     pub speed: u16,
     pub direction: Direction,
     move_frames: u16,
 }
 
 impl BigFish {
-    pub fn new(pos: Point<u16>, speed: u16, direction: Direction) -> Self {
+    pub fn new(pos: Point<i8>, speed: u16, direction: Direction) -> Self {
         BigFish {
             pos,
             speed,
@@ -228,7 +284,7 @@ impl Fish for BigFish {
                     if self.pos.x
                         >= terminal::size()
                             .expect("Should have been able to read terminal size")
-                            .0
+                            .0 as i8
                     {
                         return Err(FishOutOfBounds);
                     }
@@ -241,7 +297,7 @@ impl Fish for BigFish {
         Ok(())
     }
 
-    fn pos(&self) -> &Point<u16> {
+    fn pos(&self) -> &Point<i8> {
         &self.pos
     }
 
@@ -267,7 +323,7 @@ impl Fish for BigFish {
                 for (i, line) in lines.iter().enumerate() {
                     execute!(
                         io::stdout(),
-                        cursor::MoveTo(self.pos.x, self.pos.y + i as u16),
+                        cursor::MoveTo(self.pos.x as u16, self.pos.y as u16 + i as u16),
                         style::PrintStyledContent(line.with(Color::Green)),
                     )?;
                 }
@@ -284,7 +340,7 @@ impl Fish for BigFish {
                 for (i, line) in lines.iter().enumerate() {
                     execute!(
                         io::stdout(),
-                        cursor::MoveTo(self.pos.x, self.pos.y + i as u16),
+                        cursor::MoveTo(self.pos.x as u16, self.pos.y as u16 + i as u16),
                         style::PrintStyledContent(line.with(Color::Green)),
                     )?;
                 }
@@ -294,3 +350,4 @@ impl Fish for BigFish {
         Ok(())
     }
 }
+*/
